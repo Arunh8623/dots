@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.mp4
+*.mp3
+*.wav
+server/videos/
+server/temp/
+__pycache__/
+*.pyc
+.DS_Store
+dist/
