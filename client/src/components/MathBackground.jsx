@@ -1,105 +1,113 @@
-import { useEffect, useRef } from 'react';
-
-const SYMBOLS = ['∫', '∑', '∂', 'π', '∞', '√', 'Δ', '∇', 'θ', 'λ', 'φ', 'ψ', '⊗', '∈', '∀', '∃'];
+import React, { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 
 export default function MathBackground() {
-  const canvasRef = useRef(null);
+  const mountRef = useRef(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let animFrame;
+    const mount = mountRef.current;
+    const W = window.innerWidth, H = window.innerHeight;
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // Scene
+    const scene    = new THREE.Scene();
+    const camera   = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000);
+    camera.position.z = 30;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+    mount.appendChild(renderer.domElement);
+
+    // ── Floating torus knots ──
+    const torusKnots = [];
+    const torusMat   = new THREE.MeshBasicMaterial({ color: 0x58C4DD, wireframe: true, opacity: 0.08, transparent: true });
+    for (let i = 0; i < 4; i++) {
+      const geo  = new THREE.TorusKnotGeometry(3 + i * 0.8, 0.3, 80, 12, 2 + i, 3 + i);
+      const mesh = new THREE.Mesh(geo, torusMat.clone());
+      mesh.position.set((Math.random() - 0.5) * 60, (Math.random() - 0.5) * 40, (Math.random() - 0.5) * 20 - 10);
+      mesh.userData = { rx: Math.random() * 0.003, ry: Math.random() * 0.003 };
+      scene.add(mesh);
+      torusKnots.push(mesh);
+    }
+
+    // ── Icosahedron wireframes ──
+    const icoMeshes = [];
+    const icoMat = new THREE.MeshBasicMaterial({ color: 0xf0c040, wireframe: true, opacity: 0.06, transparent: true });
+    for (let i = 0; i < 3; i++) {
+      const geo  = new THREE.IcosahedronGeometry(4 + i * 2, 1);
+      const mesh = new THREE.Mesh(geo, icoMat.clone());
+      mesh.position.set((Math.random() - 0.5) * 50, (Math.random() - 0.5) * 35, (Math.random() - 0.5) * 15 - 15);
+      mesh.userData = { rx: Math.random() * 0.002, ry: Math.random() * 0.004 };
+      scene.add(mesh);
+      icoMeshes.push(mesh);
+    }
+
+    // ── Particle field ──
+    const particleCount = 400;
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * 120;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 80;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 60 - 20;
+    }
+    const particleGeo = new THREE.BufferGeometry();
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMat = new THREE.PointsMaterial({ color: 0x58C4DD, size: 0.12, transparent: true, opacity: 0.5 });
+    scene.add(new THREE.Points(particleGeo, particleMat));
+
+    // ── Mouse parallax ──
+    let mouseX = 0, mouseY = 0;
+    const onMouse = (e) => {
+      mouseX = (e.clientX / window.innerWidth  - 0.5) * 0.3;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 0.2;
     };
-    resize();
-    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', onMouse);
 
-    // Floating particles
-    const particles = Array.from({ length: 40 }, () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      size: Math.random() * 14 + 8,
-      opacity: Math.random() * 0.06 + 0.02,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      color: Math.random() > 0.7 ? '#58C4DD' : Math.random() > 0.5 ? '#f0c040' : '#9B72CF'
-    }));
+    // ── Resize ──
+    const onResize = () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener('resize', onResize);
 
-    // Grid lines
-    const gridLines = [];
-    const spacing = 80;
-    for (let x = 0; x < 2000; x += spacing) gridLines.push({ type: 'v', pos: x });
-    for (let y = 0; y < 2000; y += spacing) gridLines.push({ type: 'h', pos: y });
+    // ── Animation loop ──
+    let frame;
+    const animate = () => {
+      frame = requestAnimationFrame(animate);
 
-    let t = 0;
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw subtle grid
-      ctx.strokeStyle = 'rgba(30, 45, 66, 0.4)';
-      ctx.lineWidth = 0.5;
-      gridLines.forEach(line => {
-        ctx.beginPath();
-        if (line.type === 'v') {
-          ctx.moveTo(line.pos, 0);
-          ctx.lineTo(line.pos, canvas.height);
-        } else {
-          ctx.moveTo(0, line.pos);
-          ctx.lineTo(canvas.width, line.pos);
-        }
-        ctx.stroke();
+      torusKnots.forEach(m => {
+        m.rotation.x += m.userData.rx;
+        m.rotation.y += m.userData.ry;
+      });
+      icoMeshes.forEach(m => {
+        m.rotation.x += m.userData.rx;
+        m.rotation.y += m.userData.ry;
       });
 
-      // Draw origin dot at center
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(88, 196, 221, 0.2)';
-      ctx.fill();
+      // Smooth camera parallax
+      camera.position.x += (mouseX * 5  - camera.position.x) * 0.05;
+      camera.position.y += (-mouseY * 3 - camera.position.y) * 0.05;
 
-      // Floating math symbols
-      particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < -50) p.x = canvas.width + 50;
-        if (p.x > canvas.width + 50) p.x = -50;
-        if (p.y < -50) p.y = canvas.height + 50;
-        if (p.y > canvas.height + 50) p.y = -50;
-
-        ctx.save();
-        ctx.globalAlpha = p.opacity;
-        ctx.fillStyle = p.color;
-        ctx.font = `${p.size}px DM Serif Display`;
-        ctx.fillText(p.symbol, p.x, p.y);
-        ctx.restore();
-      });
-
-      t += 0.005;
-      animFrame = requestAnimationFrame(draw);
+      renderer.render(scene, camera);
     };
+    animate();
 
-    draw();
     return () => {
-      cancelAnimationFrame(animFrame);
-      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(frame);
+      window.removeEventListener('mousemove', onMouse);
+      window.removeEventListener('resize', onResize);
+      renderer.dispose();
+      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed',
-        top: 0, left: 0,
-        width: '100%', height: '100%',
-        pointerEvents: 'none',
-        zIndex: 0
-      }}
-    />
+    <div ref={mountRef} style={{
+      position: 'fixed', inset: 0,
+      pointerEvents: 'none', zIndex: 0,
+    }} />
   );
 }
