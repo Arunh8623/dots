@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
+import Logo from '../components/Logo';
 
 // ── 3D Hero Canvas ──────────────────────────────────────────────────────────
 function HeroCanvas() {
@@ -31,7 +32,7 @@ function HeroCanvas() {
     scene.add(ring);
 
     // Orbiting dots
-    const orbitDots = [];
+    const orbitdots = [];
     for (let i = 0; i < 8; i++) {
       const g = new THREE.SphereGeometry(0.12, 8, 8);
       const m = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0x58C4DD : 0xf0c040 });
@@ -39,7 +40,7 @@ function HeroCanvas() {
       d.userData.angle = (i / 8) * Math.PI * 2;
       d.userData.speed = 0.008 + i * 0.001;
       scene.add(d);
-      orbitDots.push(d);
+      orbitdots.push(d);
     }
 
     // Icosahedron halo
@@ -61,7 +62,7 @@ function HeroCanvas() {
       hero.rotation.y += 0.006;
       ring.rotation.z += 0.003;
 
-      orbitDots.forEach(d => {
+      orbitdots.forEach(d => {
         d.userData.angle += d.userData.speed;
         d.position.x = Math.cos(d.userData.angle) * 8;
         d.position.z = Math.sin(d.userData.angle) * 8 * Math.cos(Math.PI / 3);
@@ -137,18 +138,13 @@ export default function Home() {
       {/* ── NAV ── */}
       <nav style={s.nav}>
         <div style={s.navLogo}>
-          <div style={s.navLogoMark}>
-            <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
-              <circle cx="14" cy="14" r="13" stroke="#58C4DD" strokeWidth="1.5"/>
-              <path d="M8 14 Q14 6 20 14 Q14 22 8 14Z" fill="none" stroke="#f0c040" strokeWidth="1.5"/>
-              <circle cx="14" cy="14" r="2" fill="#58C4DD"/>
-            </svg>
-          </div>
-          <span style={s.navBrand}>MathViz</span>
+          <Logo size={28} />
+          <span style={s.navBrand}>dots</span>
         </div>
-        <button style={s.navCta} onClick={() => navigate('/app')}>
-          Open App <span style={{ opacity: 0.6 }}>→</span>
-        </button>
+        <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+          <button style={s.navSignIn} onClick={() => navigate('/auth')}>Sign In</button>
+          <button style={s.navCta} onClick={() => navigate('/auth')}>Get Started →</button>
+        </div>
       </nav>
 
       {/* ── HERO ── */}
@@ -176,7 +172,7 @@ export default function Home() {
           </p>
 
           <div style={s.heroBtns}>
-            <button style={s.heroPrimary} onClick={() => navigate('/app')}>
+            <button style={s.heroPrimary} onClick={() => navigate('/auth')}>
               Start Visualizing
             </button>
             <button style={s.heroSecondary} onClick={() => document.getElementById('features').scrollIntoView({ behavior:'smooth' })}>
@@ -254,8 +250,8 @@ export default function Home() {
         <div style={s.ctaGlow} />
         <h2 style={s.ctaTitle}>Ready to see math differently?</h2>
         <p style={s.ctaSub}>No setup. No formulas to memorize. Just ask.</p>
-        <button style={s.heroPrimary} onClick={() => navigate('/app')}>
-          Open MathViz →
+        <button style={s.heroPrimary} onClick={() => navigate('/auth')}>
+          Open dots →
         </button>
       </section>
 
@@ -281,9 +277,9 @@ const s = {
   // Nav
   nav: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 48px', position:'sticky', top:0, zIndex:10, background:'rgba(4,8,15,0.8)', backdropFilter:'blur(20px)', borderBottom:'1px solid var(--border)' },
   navLogo: { display:'flex', alignItems:'center', gap:'10px' },
-  navLogoMark: { display:'flex' },
   navBrand: { fontFamily:'var(--f-display)', fontSize:'20px', color:'var(--t1)', letterSpacing:'-0.3px' },
-  navCta: { background:'var(--blue)', border:'none', borderRadius:'var(--r-md)', color:'var(--bg)', fontSize:'14px', fontWeight:'700', padding:'9px 22px', cursor:'none', fontFamily:'var(--f-ui)', letterSpacing:'0.02em', transition:'opacity 0.2s', boxShadow:'0 0 20px var(--blue-glow)' },
+  navSignIn: { background:'transparent', border:'1px solid var(--border2)', borderRadius:'var(--r-md)', color:'var(--t2)', fontSize:'14px', fontWeight:'500', padding:'8px 18px', cursor:'none', fontFamily:'var(--f-ui)' },
+  navCta: { background:'var(--blue)', border:'none', borderRadius:'var(--r-md)', color:'var(--bg)', fontSize:'14px', fontWeight:'700', padding:'9px 22px', cursor:'none', fontFamily:'var(--f-ui)', letterSpacing:'0.02em', boxShadow:'0 0 20px var(--blue-glow)' },
 
   // Hero
   hero: { position:'relative', minHeight:'92vh', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' },

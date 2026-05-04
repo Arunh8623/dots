@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Generates ambient background music for Dots using FFmpeg.
+Generates ambient background music for dots using FFmpeg.
 Run once: python generate_music.py
 """
 import os

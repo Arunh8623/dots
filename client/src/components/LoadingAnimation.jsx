@@ -10,11 +10,11 @@ const STAGES = [
 ];
 
 export default function LoadingAnimation({ currentStage, message }) {
-  const [dots, setDots] = useState('');
+  const [dots, setdots] = useState('');
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    const d = setInterval(() => setDots(p => p.length >= 3 ? '' : p + '.'), 500);
+    const d = setInterval(() => setdots(p => p.length >= 3 ? '' : p + '.'), 500);
     const e = setInterval(() => setElapsed(p => p + 1), 1000);
     return () => { clearInterval(d); clearInterval(e); };
   }, []);

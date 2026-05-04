@@ -1,4 +1,4 @@
-// ─── Dots Design Tokens ────────────────────────────────────────────────────
+// ─── dots Design Tokens ────────────────────────────────────────────────────
 // Single source of truth for all colors, fonts, spacing used across the app.
 // Import this wherever you need consistent values in JS/JSX.
 

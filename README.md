@@ -1,4 +1,4 @@
-# 🎓 Dots — See Mathematics
+# 🎓 dots — See Mathematics
 
 A full-stack MERN application that converts math questions into 3Blue1Brown-style Manim animations using Gemini AI.
 

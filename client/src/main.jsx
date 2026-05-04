@@ -12,15 +12,13 @@ let rx = 0, ry = 0;
 document.addEventListener('mousemove', (e) => {
   dot.style.left  = e.clientX + 'px';
   dot.style.top   = e.clientY + 'px';
-  // Ring follows with lag
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const move = () => {
-    rx = lerp(rx, e.clientX, 0.15);
-    ry = lerp(ry, e.clientY, 0.15);
+  const animate = () => {
+    rx += (e.clientX - rx) * 0.15;
+    ry += (e.clientY - ry) * 0.15;
     ring.style.left = rx + 'px';
     ring.style.top  = ry + 'px';
   };
-  requestAnimationFrame(move);
+  requestAnimationFrame(animate);
 });
 
 // ── Error boundary ─────────────────────────────────────────────────────────────
@@ -30,11 +28,27 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ background:'#04080f', color:'#f87171', fontFamily:'Space Mono, monospace', padding:'40px', minHeight:'100vh', fontSize:'13px' }}>
-          <div style={{ color:'#58C4DD', fontSize:'20px', marginBottom:'16px' }}>MathViz — Error</div>
-          <div style={{ color:'#f0c040', marginBottom:'12px' }}>{this.state.error.message}</div>
-          <div style={{ color:'#3a5470', fontSize:'11px', whiteSpace:'pre-wrap' }}>{this.state.error.stack}</div>
-          <button onClick={() => window.location.reload()} style={{ marginTop:'24px', background:'#58C4DD', border:'none', borderRadius:'8px', color:'#04080f', padding:'10px 20px', cursor:'pointer' }}>Reload</button>
+        <div style={{
+          background:'#04080f', color:'#f87171',
+          fontFamily:'monospace', padding:'40px',
+          minHeight:'100vh', fontSize:'13px',
+          whiteSpace:'pre-wrap', wordBreak:'break-word'
+        }}>
+          <div style={{ color:'#58C4DD', fontSize:'18px', marginBottom:'16px' }}>
+            ⚠️  dots — React Error
+          </div>
+          <div style={{ color:'#f0c040', marginBottom:'12px', fontSize:'15px' }}>
+            {this.state.error.message}
+          </div>
+          <div style={{ color:'#3a5470', fontSize:'11px' }}>
+            {this.state.error.stack}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ marginTop:'24px', background:'#58C4DD', border:'none', borderRadius:'8px', color:'#04080f', padding:'10px 20px', cursor:'pointer', fontFamily:'monospace', fontSize:'13px' }}
+          >
+            Reload Page
+          </button>
         </div>
       );
     }
@@ -43,5 +57,7 @@ class ErrorBoundary extends React.Component {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ErrorBoundary><App /></ErrorBoundary>
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 );
